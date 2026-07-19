@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معدل التحويل | د. مروة منصور</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0a1420;
+    --panel:#101c2c;
+    --panel-2:#152238;
+    --line:#22334a;
+    --teal:#3ddbd9;
+    --amber:#e8b75c;
+    --rose:#d9707a;
+    --slate:#6b7a8d;
+    --text:#eaf1f5;
+    --text-dim:#93a4b8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(1200px 600px at 80% -10%, #10233366, transparent), var(--bg);
+    color:var(--text);
+    font-family:'Tajawal', sans-serif;
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+
+  /* Header */
+  header{
+    position:relative;
+    padding:26px 28px;
+    border-radius:18px;
+    background:linear-gradient(135deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  header::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 38px, #3ddbd914 38px 40px);
+    opacity:.5;
+    animation:pulseScan 6s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes pulseScan{ from{background-position:0 0;} to{background-position:400px 0;} }
+  .eyebrow{
+    font-family:'Cairo', sans-serif;
+    font-size:12px;
+    letter-spacing:.5px;
+    color:var(--teal);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Cairo', sans-serif;
+    font-size:26px;
+    font-weight:800;
+    margin:0 0 4px;
+    position:relative;
+  }
+  header p{
+    margin:0;
+    color:var(--text-dim);
+    font-size:14px;
+    position:relative;
+  }
+
+  /* Card */
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px;
+    margin-bottom:20px;
+  }
+  .card h2{
+    font-family:'Cairo', sans-serif;
+    font-size:16px;
+    font-weight:700;
+    margin:0 0 16px;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card h2::before{
+    content:"";
+    width:4px; height:16px;
+    background:var(--teal);
+    border-radius:2px;
+    display:inline-block;
+  }
+  .result-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .result-header h2{margin:0;}
+  .btn-download{
+    padding:9px 16px;
+    font-size:13px;
+    white-space:nowrap;
+  }
+
+  /* Form */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  label{font-size:13px; color:var(--text-dim);}
+  input[type=month], input[type=number]{
+    background:#0d1826;
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    padding:11px 12px;
+    font-size:15px;
+    font-family:'Tajawal', sans-serif;
+    outline:none;
+    transition:border-color .15s;
+  }
+  input:focus{border-color:var(--teal);}
+  .pos-input{border-inline-start:3px solid var(--amber);}
+  .neg-input{border-inline-start:3px solid var(--rose);}
+  .na-input{border-inline-start:3px solid var(--slate);}
+
+  .actions{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  button{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    border:none;
+    border-radius:10px;
+    padding:12px 20px;
+    cursor:pointer;
+    transition:transform .1s, opacity .15s;
+  }
+  button:active{transform:scale(.97);}
+  .btn-primary{background:var(--teal); color:#06201f;}
+  .btn-primary:hover{opacity:.9;}
+  .btn-ghost{background:transparent; color:var(--text-dim); border:1px solid var(--line);}
+  .btn-ghost:hover{color:var(--text); border-color:var(--teal);}
+  .msg{font-size:13px; margin-top:10px; min-height:16px;}
+  .msg.error{color:var(--rose);}
+  .msg.ok{color:var(--teal);}
+
+  /* Hero result */
+  .hero{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .donut-wrap{position:relative; width:220px; height:220px; flex-shrink:0;}
+  .donut-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .donut-center .pct{
+    font-family:'Cairo', sans-serif;
+    font-size:38px;
+    font-weight:800;
+    color:var(--teal);
+    line-height:1;
+  }
+  .donut-center .lbl{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:4px;
+    text-align:center;
+    max-width:120px;
+  }
+  .stats{
+    display:grid;
+    gap:10px;
+    flex:1;
+    min-width:220px;
+  }
+  .stat-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel-2);
+    border-radius:10px;
+    padding:10px 14px;
+  }
+  .stat-row .dot{width:10px; height:10px; border-radius:50%; display:inline-block; margin-inline-end:8px;}
+  .dot-pos{background:var(--amber);}
+  .dot-neg{background:var(--rose);}
+  .dot-na{background:var(--slate);}
+  .stat-row .name{font-size:14px; color:var(--text-dim); display:flex; align-items:center;}
+  .stat-row .val{font-family:'Cairo', sans-serif; font-weight:700; font-size:16px;}
+
+  .empty{
+    text-align:center;
+    padding:30px 10px;
+    color:var(--text-dim);
+    font-size:14px;
+  }
+
+  /* History table */
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th, td{padding:10px 8px; text-align:center; border-bottom:1px solid var(--line);}
+  th{color:var(--text-dim); font-weight:500; font-size:12px;}
+  td.period-cell{text-align:start; color:var(--text); font-weight:500;}
+  tr:hover td{background:#0d1826;}
+  .rate-badge{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:12px;
+  }
+  .rate-high{background:#3ddbd91f; color:var(--teal);}
+  .rate-mid{background:#e8b75c1f; color:var(--amber);}
+  .rate-low{background:#d9707a1f; color:var(--rose);}
+  .del-btn{
+    background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:16px; padding:2px 6px;
+  }
+  .del-btn:hover{color:var(--rose);}
+
+  input[type=text]{
+    background:#0d1826;
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    padding:11px 12px;
+    font-size:14px;
+    font-family:'Tajawal', sans-serif;
+    outline:none;
+    transition:border-color .15s;
+    width:100%;
+  }
+  input[type=text]:focus{border-color:var(--teal);}
+  .note-line{
+    margin-top:14px;
+    font-size:13px;
+    color:var(--text-dim);
+    background:var(--panel-2);
+    border-radius:10px;
+    padding:10px 14px;
+    border-inline-start:3px solid var(--teal);
+  }
+  .note-line b{color:var(--text); font-weight:600;}
+  .delta{
+    display:inline-flex;
+    align-items:center;
+    gap:3px;
+    font-size:12px;
+    font-weight:700;
+    margin-top:6px;
+  }
+  .delta-up{color:#5fe3a1;}
+  .delta-down{color:var(--rose);}
+  .delta-flat{color:var(--text-dim);}
+  .note-cell{
+    font-size:12px;
+    color:var(--text-dim);
+    max-width:140px;
+    text-align:start;
+    white-space:normal;
+  }
+
+  .trend-chart-wrap{margin-top:18px; height:180px;}
+
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:12px;
+    margin-top:20px;
+  }
+
+  @media (max-width:520px){
+    .grid{grid-template-columns:1fr;}
+    header{padding:20px;}
+    h1{font-size:21px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">قسم الاستشارات الدوائية</div>
+    <h1>معدل التحويل الشهري</h1>
+    <p>د. مروة منصور — صيدلانية استشارية · تتبع نتائج مكالمات المتابعة مع العملاء</p>
+  </header>
+
+  <div class="card">
+    <h2>تسجيل شهر جديد</h2>
+    <div class="grid">
+      <div class="field full">
+        <label for="monthInput">الشهر (الفترة من 21 الشهر السابق إلى 20 هذا الشهر)</label>
+        <input type="month" id="monthInput">
+      </div>
+      <div class="field">
+        <label for="posInput">عملاء إيجابي (استفادوا من العلاج)</label>
+        <input type="number" min="0" id="posInput" class="pos-input" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="negInput">عملاء سلبي (لم يستفيدوا)</label>
+        <input type="number" min="0" id="negInput" class="neg-input" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="naInput">لم يرد</label>
+        <input type="number" min="0" id="naInput" class="na-input" placeholder="0">
+      </div>
+      <div class="field full">
+        <label for="notesInput">ملاحظة (اختياري — مثلاً نوع العلاج الغالب اللي ما جاب نتيجة)</label>
+        <input type="text" id="notesInput" placeholder="اكتبي ملاحظتك هنا...">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="saveRecord()">حفظ وحساب النسبة</button>
+      <button class="btn-ghost" onclick="clearForm()">تفريغ الحقول</button>
+    </div>
+    <div class="msg" id="formMsg"></div>
+  </div>
+
+  <div class="card">
+    <div class="result-header">
+      <h2 id="resultTitle">نتيجة آخر شهر مسجّل</h2>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="msg" id="downloadMsg" style="margin:0;"></span>
+        <button class="btn-primary btn-download" id="downloadBtn" onclick="downloadImage()" style="display:none;">⬇ تحميل النتيجة كصورة</button>
+      </div>
+    </div>
+    <div id="resultArea">
+      <div class="emple empty">لسه مفيش بيانات مسجّلة — سجّلي أول شهر فوق ليظهر التحليل هنا.</div>
+    </div>
+  </div>
+
+  <div class="card" id="historyCard" style="display:none;">
+    <h2>السجل الشهري</h2>
+    <div style="overflow-x:auto;">
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>الفترة</th>
+            <th>إيجابي</th>
+            <th>سلبي</th>
+            <th>لم يرد</th>
+            <th>معدل التحويل</th>
+            <th>ملاحظة</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <div class="trend-chart-wrap">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    البيانات محفوظة في متصفحك على هذا الجهاز فقط
+    <div style="margin-top:6px; color:var(--text-dim);">Powered by: Dr Marwa Mansour</div>
+  </footer>
+</div>
+
+<script>
+let records = [];
+let donutChart = null;
+let trendChart = null;
+const STORAGE_KEY = 'conversion_records';
+
+const arabicMonths = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+function monthLabel(y, m){ return arabicMonths[m] + " " + y; }
+
+function periodLabelFromInput(value){
+  // value like "2026-07" meaning selected month = end month of the period
+  const [y, m] = value.split('-').map(Number);
+  let prevM = m - 1, prevY = y;
+  if(prevM === 0){ prevM = 12; prevY = y - 1; }
+  return `21 ${arabicMonths[prevM-1]} – 20 ${arabicMonths[m-1]} ${y}`;
+}
+
+function periodKeyFromInput(value){ return value; } // "YYYY-MM" as unique key, sorts naturally
+
+async function loadRecords(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    records = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    records = [];
+  }
+  records.sort((a,b) => a.key.localeCompare(b.key));
+  renderAll();
+}
+
+async function persist(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }catch(e){
+    console.error('storage error', e);
+  }
+}
+
+function clearForm(){
+  document.getElementById('posInput').value = '';
+  document.getElementById('negInput').value = '';
+  document.getElementById('naInput').value = '';
+  document.getElementById('notesInput').value = '';
+  document.getElementById('formMsg').textContent = '';
+  document.getElementById('formMsg').className = 'msg';
+}
+
+async function saveRecord(){
+  const monthVal = document.getElementById('monthInput').value;
+  const pos = parseInt(document.getElementById('posInput').value);
+  const neg = parseInt(document.getElementById('negInput').value);
+  const na = parseInt(document.getElementById('naInput').value);
+  const msgEl = document.getElementById('formMsg');
+
+  if(!monthVal){
+    msgEl.textContent = 'من فضلك اختاري الشهر أولاً';
+    msgEl.className = 'msg error';
+    return;
+  }
+  if([pos, neg, na].some(v => isNaN(v) || v < 0)){
+    msgEl.textContent = 'من فضلك دخّلي الأرقام الثلاثة بشكل صحيح (يمكن تدخيل صفر)';
+    msgEl.className = 'msg error';
+    return;
+  }
+
+  const notes = document.getElementById('notesInput').value.trim();
+  const key = periodKeyFromInput(monthVal);
+  const label = periodLabelFromInput(monthVal);
+  const existingIdx = records.findIndex(r => r.key === key);
+  const record = { key, label, pos, neg, na, notes };
+
+  if(existingIdx >= 0){
+    records[existingIdx] = record;
+    msgEl.textContent = `تم تحديث بيانات الفترة (${label})`;
+  }else{
+    records.push(record);
+    msgEl.textContent = `تم حفظ بيانات الفترة (${label})`;
+  }
+  msgEl.className = 'msg ok';
+  records.sort((a,b) => a.key.localeCompare(b.key));
+  await persist();
+  renderAll();
+}
+
+function roundRectPath(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function wrapTextLines(ctx, text, maxWidth){
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  for(const word of words){
+    const test = current ? current + ' ' + word : word;
+    if(ctx.measureText(test).width > maxWidth && current){
+      lines.push(current);
+      current = word;
+    }else{
+      current = test;
+    }
+  }
+  if(current) lines.push(current);
+  return lines;
+}
+
+async function downloadImage(){
+  if(records.length === 0) return;
+  const btn = document.getElementById('downloadBtn');
+  const msgEl = document.getElementById('downloadMsg');
+  const originalText = btn.textContent;
+  btn.textContent = '... جاري التحضير';
+  btn.disabled = true;
+  msgEl.textContent = '';
+  msgEl.className = 'msg';
+
+  try{
+    // best-effort font wait, capped so we never hang
+    await Promise.race([
+      document.fonts ? document.fonts.ready : Promise.resolve(),
+      new Promise(res => setTimeout(res, 1200))
+    ]);
+
+    const r = records[records.length - 1];
+    const prev = records.length > 1 ? records[records.length - 2] : null;
+    const total = r.pos + r.neg + r.na;
+    const rate = conversionRate(r);
+    const rateDisplay = rate === null ? '—' : rate.toFixed(1) + '%';
+    const prevRate = prev ? conversionRate(prev) : null;
+
+    const COLORS = {
+      bg1:'#101c2c', bg2:'#0a1420', teal:'#3ddbd9', amber:'#e8b75c',
+      rose:'#d9707a', slate:'#6b7a8d', text:'#eaf1f5', dim:'#93a4b8', panel2:'#152238'
+    };
+
+    const SCALE = 2;
+    const W = 680;
+    const padX = 50;
+
+    // Pre-measure note lines (if any) using a scratch canvas at logical scale
+    const measure = document.createElement('canvas').getContext('2d');
+    measure.font = '400 14px Tajawal, sans-serif';
+    let noteLines = [];
+    if(r.notes){
+      noteLines = wrapTextLines(measure, r.notes, W - padX*2 - 30);
+    }
+
+    // Compute dynamic total height
+    const topBlockH = 175;      // accent bar + eyebrow + title + period
+    const donutH = 300;
+    const gap1 = 30;
+    const statsH = 84;
+    const gap2 = noteLines.length ? 22 : 30;
+    const noteH = noteLines.length ? (24 + noteLines.length * 20 + 20) : 0;
+    const footerH = 78;
+    const H = topBlockH + donutH + gap1 + statsH + gap2 + noteH + footerH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W * SCALE;
+    canvas.height = H * SCALE;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(SCALE, SCALE);
+    ctx.textBaseline = 'middle';
+
+    // Rounded card background
+    roundRectPath(ctx, 0, 0, W, H, 22);
+    ctx.clip();
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+    bgGrad.addColorStop(0, COLORS.bg1);
+    bgGrad.addColorStop(1, COLORS.bg2);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Top accent bar
+    const accentGrad = ctx.createLinearGradient(0, 0, W, 0);
+    accentGrad.addColorStop(0, COLORS.amber);
+    accentGrad.addColorStop(0.5, COLORS.teal);
+    accentGrad.addColorStop(1, COLORS.rose);
+    ctx.fillStyle = accentGrad;
+    ctx.fillRect(0, 0, W, 6);
+
+    let y = 46;
+    ctx.textAlign = 'center';
+
+    // Eyebrow
+    ctx.font = '700 14px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.teal;
+    ctx.fillText('قسم الاستشارات الدوائية', W/2, y);
+
+    // Title
+    y += 38;
+    ctx.font = '800 30px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.text;
+    ctx.fillText('معدل التحويل الشهري', W/2, y);
+
+    // Period
+    y += 30;
+    ctx.font = '400 15px Tajawal, sans-serif';
+    ctx.fillStyle = COLORS.dim;
+    ctx.fillText(`فترة: ${r.label}`, W/2, y);
+
+    // Donut chart
+    const cx = W/2;
+    const cy = y + 30 + donutH/2 - 20;
+    const outerR = 128;
+    const innerR = 92;
+    const segs = [
+      { v: r.pos, color: COLORS.amber },
+      { v: r.neg, color: COLORS.rose },
+      { v: r.na, color: COLORS.slate }
+    ];
+    let start = -Math.PI/2;
+    if(total > 0){
+      segs.forEach(seg => {
+        if(seg.v <= 0) return;
+        const sweep = (seg.v/total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, outerR, start, start + sweep, false);
+        ctx.arc(cx, cy, innerR, start + sweep, start, true);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+        start += sweep;
+      });
+    }else{
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, 0, Math.PI*2);
+      ctx.arc(cx, cy, innerR, 0, Math.PI*2, true);
+      ctx.closePath();
+      ctx.fillStyle = COLORS.panel2;
+      ctx.fill();
+    }
+
+    // Center percentage
+    ctx.font = '800 50px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.teal;
+    ctx.fillText(rateDisplay, cx, cy - 6);
+
+    ctx.font = '400 13px Tajawal, sans-serif';
+    ctx.fillStyle = COLORS.dim;
+    ctx.fillText('معدل التحويل', cx, cy + 26);
+
+    if(prevRate !== null && rate !== null){
+      const diff = rate - prevRate;
+      let deltaText, deltaColor;
+      if(Math.abs(diff) < 0.05){
+        deltaText = '◆ بدون تغيير عن الشهر السابق';
+        deltaColor = COLORS.dim;
+      }else{
+        deltaText = `${diff > 0 ? '▲' : '▼'} ${Math.abs(diff).toFixed(1)}% عن الشهر السابق`;
+        deltaColor = diff > 0 ? '#5fe3a1' : COLORS.rose;
+      }
+      ctx.font = '700 13px Cairo, sans-serif';
+      ctx.fillStyle = deltaColor;
+      ctx.fillText(deltaText, cx, cy + 48);
+    }
+
+    // Stats row
+    let statsY = y + 30 + donutH + gap1;
+    const stats = [
+      { n: r.pos, l: 'إيجابي', c: COLORS.amber },
+      { n: r.neg, l: 'سلبي', c: COLORS.rose },
+      { n: r.na, l: 'لم يرد', c: COLORS.slate },
+      { n: total, l: 'إجمالي', c: COLORS.text }
+    ];
+    const boxGap = 12;
+    const boxW = (W - padX*2 - boxGap*3) / 4;
+    stats.forEach((s, i) => {
+      const bx = padX + i*(boxW + boxGap);
+      roundRectPath(ctx, bx, statsY, boxW, statsH, 12);
+      ctx.fillStyle = COLORS.panel2;
+      ctx.fill();
+      ctx.font = '800 21px Cairo, sans-serif';
+      ctx.fillStyle = s.c;
+      ctx.fillText(String(s.n), bx + boxW/2, statsY + 32);
+      ctx.font = '400 12px Tajawal, sans-serif';
+      ctx.fillStyle = COLORS.dim;
+      ctx.fillText(s.l, bx + boxW/2, statsY + 58);
+    });
+
+    // Note box
+    if(noteLines.length){
+      const noteY = statsY + statsH + gap2;
+      const noteBoxH = noteH - 20;
+      roundRectPath(ctx, padX, noteY, W - padX*2, noteBoxH, 10);
+      ctx.fillStyle = COLORS.panel2;
+      ctx.fill();
+      // accent bar (right side, since RTL inline-start)
+      ctx.fillStyle = COLORS.teal;
+      ctx.fillRect(W - padX - 3, noteY, 3, noteBoxH);
+
+      ctx.textAlign = 'right';
+      ctx.font = '400 14px Tajawal, sans-serif';
+      ctx.fillStyle = COLORS.dim;
+      noteLines.forEach((line, i) => {
+        const text = i === 0 ? `ملاحظة: ${line}` : line;
+        ctx.fillText(text, W - padX - 16, noteY + 22 + i*20);
+      });
+      ctx.textAlign = 'center';
+    }
+
+    // Footer
+    const footerY = H - footerH;
+    ctx.strokeStyle = '#22334a';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padX, footerY);
+    ctx.lineTo(W - padX, footerY);
+    ctx.stroke();
+
+    ctx.font = '400 13px Tajawal, sans-serif';
+    ctx.fillStyle = COLORS.dim;
+    ctx.fillText('د. مروة منصور — صيدلانية استشارية', W/2, footerY + 30);
+
+    ctx.font = '700 13px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.teal;
+    ctx.fillText('Powered by: Dr Marwa Mansour', W/2, footerY + 54);
+
+    const link = document.createElement('a');
+    link.download = `معدل-التحويل-${r.key}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    msgEl.textContent = 'تم تحميل الصورة';
+    msgEl.className = 'msg ok';
+  }catch(e){
+    console.error('export error', e);
+    msgEl.textContent = 'حصلت مشكلة، جربي تاني';
+    msgEl.className = 'msg error';
+  }finally{
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+async function deleteRecord(key){
+  records = records.filter(r => r.key !== key);
+  await persist();
+  renderAll();
+}
+
+function conversionRate(r){
+  const responded = r.pos + r.neg;
+  if(responded === 0) return null;
+  return (r.pos / responded) * 100;
+}
+
+function deltaHtml(currentRate, prevRate){
+  if(currentRate === null || prevRate === null) return '';
+  const diff = currentRate - prevRate;
+  if(Math.abs(diff) < 0.05){
+    return `<div class="delta delta-flat">◆ بدون تغيير عن الشهر السابق</div>`;
+  }
+  const arrow = diff > 0 ? '▲' : '▼';
+  const cls = diff > 0 ? 'delta-up' : 'delta-down';
+  return `<div class="delta ${cls}">${arrow} ${Math.abs(diff).toFixed(1)}% عن الشهر السابق</div>`;
+}
+
+function rateBadgeClass(rate){
+  if(rate === null) return 'rate-low';
+  if(rate >= 70) return 'rate-high';
+  if(rate >= 40) return 'rate-mid';
+  return 'rate-low';
+}
+
+function renderAll(){
+  renderResult();
+  renderHistory();
+}
+
+function renderResult(){
+  const area = document.getElementById('resultArea');
+  const title = document.getElementById('resultTitle');
+  const downloadBtn = document.getElementById('downloadBtn');
+  if(records.length === 0){
+    title.textContent = 'نتيجة آخر شهر مسجّل';
+    area.innerHTML = '<div class="empty">لسه مفيش بيانات مسجّلة — سجّلي أول شهر فوق ليظهر التحليل هنا.</div>';
+    downloadBtn.style.display = 'none';
+    return;
+  }
+  downloadBtn.style.display = 'inline-block';
+  const r = records[records.length - 1];
+  const prev = records.length > 1 ? records[records.length - 2] : null;
+  title.textContent = `نتيجة فترة: ${r.label}`;
+  const total = r.pos + r.neg + r.na;
+  const rate = conversionRate(r);
+  const rateDisplay = rate === null ? '—' : rate.toFixed(1) + '%';
+  const deltaBlock = prev ? deltaHtml(rate, conversionRate(prev)) : '';
+  const noteBlock = r.notes ? `<div class="note-line"><b>ملاحظة:</b> ${r.notes}</div>` : '';
+
+  area.innerHTML = `
+    <div class="hero">
+      <div class="donut-wrap">
+        <canvas id="donutChart" width="220" height="220"></canvas>
+        <div class="donut-center">
+          <div class="pct">${rateDisplay}</div>
+          <div class="lbl">معدل التحويل من إجمالي من تم الرد عليهم</div>
+          ${deltaBlock}
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-row"><span class="name"><span class="dot dot-pos"></span>إيجابي</span><span class="val" style="color:var(--amber)">${r.pos}</span></div>
+        <div class="stat-row"><span class="name"><span class="dot dot-neg"></span>سلبي</span><span class="val" style="color:var(--rose)">${r.neg}</span></div>
+        <div class="stat-row"><span class="name"><span class="dot dot-na"></span>لم يرد</span><span class="val" style="color:var(--slate)">${r.na}</span></div>
+        <div class="stat-row" style="border:1px solid var(--line);"><span class="name">إجمالي المكالمات</span><span class="val">${total}</span></div>
+      </div>
+    </div>
+    ${noteBlock}
+  `;
+
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  if(donutChart) donutChart.destroy();
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data:{
+      labels:['إيجابي','سلبي','لم يرد'],
+      datasets:[{
+        data:[r.pos, r.neg, r.na],
+        backgroundColor:['#e8b75c','#d9707a','#6b7a8d'],
+        borderColor:'#101c2c',
+        borderWidth:3,
+        hoverOffset:6
+      }]
+    },
+    options:{
+      cutout:'72%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          rtl:true,
+          callbacks:{
+            label: (ctx) => `${ctx.label}: ${ctx.raw} (${((ctx.raw/total)*100).toFixed(1)}%)`
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderHistory(){
+  const card = document.getElementById('historyCard');
+  const body = document.getElementById('historyBody');
+  if(records.length === 0){
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+  body.innerHTML = records.slice().reverse().map((r, idx) => {
+    const reversedIdx = records.length - 1 - idx;
+    const prev = reversedIdx > 0 ? records[reversedIdx - 1] : null;
+    const rate = conversionRate(r);
+    const rateDisplay = rate === null ? '—' : rate.toFixed(1) + '%';
+    const delta = prev ? deltaHtml(rate, conversionRate(prev)) : '';
+    return `
+      <tr>
+        <td class="period-cell">${r.label}</td>
+        <td style="color:var(--amber)">${r.pos}</td>
+        <td style="color:var(--rose)">${r.neg}</td>
+        <td style="color:var(--slate)">${r.na}</td>
+        <td><span class="rate-badge ${rateBadgeClass(rate)}">${rateDisplay}</span>${delta}</td>
+        <td class="note-cell">${r.notes ? r.notes : '—'}</td>
+        <td><button class="del-btn" onclick="deleteRecord('${r.key}')" title="حذف">✕</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: records.map(r => r.label),
+      datasets:[{
+        label:'معدل التحويل %',
+        data: records.map(r => { const v = conversionRate(r); return v === null ? 0 : v.toFixed(1); }),
+        borderColor:'#3ddbd9',
+        backgroundColor:'#3ddbd922',
+        fill:true,
+        tension:0.35,
+        pointBackgroundColor:'#3ddbd9',
+        pointRadius:4
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ min:0, max:100, ticks:{ color:'#93a4b8', callback:v=>v+'%' }, grid:{ color:'#22334a' } },
+        x:{ ticks:{ color:'#93a4b8' }, grid:{ display:false } }
+      }
+    }
+  });
+}
+
+// init default month to current
+(function initMonth(){
+  const now = new Date();
+  const val = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('monthInput').value = val;
+})();
+
+loadRecords();
+</script>
+</body>
+</html>

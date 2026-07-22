@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معدل التحويل | قسم الاستشارات - د. مروة منصور</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0a1420;
+    --panel:#101c2c;
+    --panel-2:#152238;
+    --line:#22334a;
+    --teal:#3ddbd9;
+    --amber:#e8b75c;
+    --rose:#d9707a;
+    --slate:#6b7a8d;
+    --gold:#ffd166;
+    --text:#eaf1f5;
+    --text-dim:#93a4b8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(1200px 600px at 80% -10%, #10233366, transparent), var(--bg);
+    color:var(--text);
+    font-family:'Tajawal', sans-serif;
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:960px; margin:0 auto;}
+
+  header{
+    position:relative;
+    padding:26px 28px;
+    border-radius:18px;
+    background:linear-gradient(135deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  header::after{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(90deg, transparent 0 38px, #3ddbd914 38px 40px);
+    opacity:.5;
+    animation:pulseScan 6s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes pulseScan{ from{background-position:0 0;} to{background-position:400px 0;} }
+  .eyebrow{
+    font-family:'Cairo', sans-serif;
+    font-size:12px;
+    letter-spacing:.5px;
+    color:var(--teal);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Cairo', sans-serif;
+    font-size:26px;
+    font-weight:800;
+    margin:0 0 4px;
+    position:relative;
+  }
+  header p{
+    margin:0;
+    color:var(--text-dim);
+    font-size:14px;
+    position:relative;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px;
+    margin-bottom:20px;
+  }
+  .card h2{
+    font-family:'Cairo', sans-serif;
+    font-size:16px;
+    font-weight:700;
+    margin:0 0 16px;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card h2::before{
+    content:"";
+    width:4px; height:16px;
+    background:var(--teal);
+    border-radius:2px;
+    display:inline-block;
+  }
+  .result-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .result-header h2{margin:0;}
+  .btn-download{
+    padding:9px 16px;
+    font-size:13px;
+    white-space:nowrap;
+  }
+
+  /* Employee management */
+  .emp-add-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .emp-add-row input{flex:1;}
+  .emp-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .emp-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel-2);
+    border-radius:10px;
+    padding:10px 14px;
+    gap:10px;
+  }
+  .emp-row .emp-name{
+    font-weight:600;
+    font-size:14px;
+    flex:1;
+  }
+  .emp-row input[type=text]{
+    flex:1;
+    padding:6px 10px;
+    font-size:14px;
+  }
+  .icon-btn{
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    cursor:pointer;
+    font-size:15px;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  .icon-btn:hover{background:#0d1826; color:var(--text);}
+  .icon-btn.danger:hover{color:var(--rose);}
+  .icon-btn.ok:hover{color:var(--teal);}
+  .emp-empty{color:var(--text-dim); font-size:13px; padding:8px 2px;}
+
+  .current-period-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    background:var(--panel-2);
+    border-radius:12px;
+    padding:14px 18px;
+    margin-bottom:16px;
+  }
+  .cp-label{font-size:12px; color:var(--text-dim); margin-bottom:2px;}
+  .cp-value{font-family:'Cairo', sans-serif; font-weight:700; font-size:15px; color:var(--teal);}
+  .btn-close-month{padding:9px 14px; font-size:13px; white-space:nowrap;}
+
+  /* Form */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  label{font-size:13px; color:var(--text-dim);}
+  input[type=month], input[type=number], input[type=text], select{
+    background:#0d1826;
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    padding:11px 12px;
+    font-size:15px;
+    font-family:'Tajawal', sans-serif;
+    outline:none;
+    transition:border-color .15s;
+    width:100%;
+  }
+  select{
+    appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2393a4b8' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat;
+    background-position:left 12px center;
+  }
+  input:focus, select:focus{border-color:var(--teal);}
+  .total-input{border-inline-start:3px solid var(--teal);}
+  .pos-input{border-inline-start:3px solid var(--amber);}
+  .neg-input{border-inline-start:3px solid var(--rose);}
+  .na-display{
+    background:#0d1826;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:15px;
+    color:var(--slate);
+    border-inline-start:3px solid var(--slate);
+    font-weight:700;
+  }
+  .na-display.err{color:var(--rose); border-color:var(--rose);}
+
+  .actions{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  button{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    border:none;
+    border-radius:10px;
+    padding:12px 20px;
+    cursor:pointer;
+    transition:transform .1s, opacity .15s;
+  }
+  button:active{transform:scale(.97);}
+  button:disabled{opacity:.5; cursor:not-allowed;}
+  .btn-primary{background:var(--teal); color:#06201f;}
+  .btn-primary:hover{opacity:.9;}
+  .btn-ghost{background:transparent; color:var(--text-dim); border:1px solid var(--line);}
+  .btn-ghost:hover{color:var(--text); border-color:var(--teal);}
+  .msg{font-size:13px; margin-top:10px; min-height:16px;}
+  .msg.error{color:var(--rose);}
+  .msg.ok{color:var(--teal);}
+
+  /* Hero result */
+  .hero{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .donut-wrap{position:relative; width:220px; height:220px; flex-shrink:0;}
+  .donut-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .donut-center .pct{
+    font-family:'Cairo', sans-serif;
+    font-size:38px;
+    font-weight:800;
+    color:var(--teal);
+    line-height:1;
+  }
+  .donut-center .lbl{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:4px;
+    text-align:center;
+    max-width:120px;
+  }
+  .stats{
+    display:grid;
+    gap:10px;
+    flex:1;
+    min-width:220px;
+  }
+  .stat-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel-2);
+    border-radius:10px;
+    padding:10px 14px;
+  }
+  .stat-row .dot{width:10px; height:10px; border-radius:50%; display:inline-block; margin-inline-end:8px;}
+  .dot-pos{background:var(--amber);}
+  .dot-neg{background:var(--rose);}
+  .dot-na{background:var(--slate);}
+  .stat-row .name{font-size:14px; color:var(--text-dim); display:flex; align-items:center;}
+  .stat-row .val{font-family:'Cairo', sans-serif; font-weight:700; font-size:16px;}
+  .delta{
+    display:inline-flex;
+    align-items:center;
+    gap:3px;
+    font-size:12px;
+    font-weight:700;
+    margin-top:6px;
+  }
+  .delta-up{color:#5fe3a1;}
+  .delta-down{color:var(--rose);}
+  .delta-flat{color:var(--text-dim);}
+  .note-line{
+    margin-top:14px;
+    font-size:13px;
+    color:var(--text-dim);
+    background:var(--panel-2);
+    border-radius:10px;
+    padding:10px 14px;
+    border-inline-start:3px solid var(--teal);
+  }
+  .note-line b{color:var(--text); font-weight:600;}
+
+  .empty{
+    text-align:center;
+    padding:30px 10px;
+    color:var(--text-dim);
+    font-size:14px;
+  }
+
+  /* Employee grid */
+  .emp-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+    gap:14px;
+  }
+  .emp-card{
+    background:var(--panel-2);
+    border-radius:14px;
+    padding:16px 10px;
+    text-align:center;
+    position:relative;
+  }
+  .emp-card.top-performer{border:1px solid var(--gold);}
+  .emp-card .crown{position:absolute; top:8px; inset-inline-end:10px; font-size:14px;}
+  .emp-card .mini-donut-wrap{position:relative; width:96px; height:96px; margin:0 auto 8px;}
+  .emp-card .mini-center{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:16px;
+    color:var(--teal);
+  }
+  .emp-card .emp-card-name{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    margin-bottom:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .emp-card .emp-card-counts{
+    font-size:11px;
+    color:var(--text-dim);
+  }
+
+  /* History table */
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th, td{padding:10px 8px; text-align:center; border-bottom:1px solid var(--line);}
+  th{color:var(--text-dim); font-weight:500; font-size:12px;}
+  td.period-cell{text-align:start; color:var(--text); font-weight:500;}
+  td.emp-name-cell{text-align:start; color:var(--text-dim);}
+  tr:hover td{background:#0d1826;}
+  .rate-badge{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:12px;
+  }
+  .rate-high{background:#3ddbd91f; color:var(--teal);}
+  .rate-mid{background:#e8b75c1f; color:var(--amber);}
+  .rate-low{background:#d9707a1f; color:var(--rose);}
+  .row-actions{display:flex; gap:2px; justify-content:center;}
+  .deleted-tag{font-size:10px; color:var(--rose); margin-inline-start:4px;}
+
+  .trend-chart-wrap{margin-top:18px; height:180px;}
+
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:12px;
+    margin-top:20px;
+  }
+
+  @media (max-width:520px){
+    .grid{grid-template-columns:1fr;}
+    header{padding:20px;}
+    h1{font-size:21px;}
+    .emp-grid{grid-template-columns:repeat(2, 1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">قسم الاستشارات الدوائية</div>
+    <h1>معدل التحويل الشهري — القسم والموظفين</h1>
+    <p>د. مروة منصور — مشرف قسم الاستشارات والتدريب · تتبع نتائج مكالمات المتابعة مع العملاء لكل موظف والقسم ككل</p>
+  </header>
+
+  <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+    <a href="details.html" class="btn-ghost" style="text-decoration:none; display:inline-block; font-family:'Cairo',sans-serif; font-weight:700; font-size:14px; padding:10px 18px; border-radius:10px;">📊 تفصيلي الموظفين</a>
+  </div>
+
+  <div class="card">
+    <h2>الموظفين</h2>
+    <div class="emp-add-row">
+      <input type="text" id="empNameInput" placeholder="اسم الموظف الجديد">
+      <button class="btn-primary" onclick="addEmployee()">+ إضافة</button>
+    </div>
+    <div class="emp-list" id="employeeListArea"></div>
+  </div>
+
+  <div class="card">
+    <h2>تسجيل أرقام اليوم لموظف</h2>
+    <div class="current-period-bar">
+      <div>
+        <div class="cp-label">الفترة الحالية</div>
+        <div class="cp-value" id="currentPeriodLabel">—</div>
+      </div>
+      <button class="btn-ghost btn-close-month" onclick="closeMonth()">✅ تحديث — الشهر خلص</button>
+    </div>
+    <div class="msg" id="periodMsg"></div>
+    <div class="grid">
+      <div class="field full">
+        <label for="employeeSelect">الموظف</label>
+        <select id="employeeSelect"></select>
+      </div>
+      <div class="field full">
+        <label for="totalInput">إجمالي مكالمات اليوم</label>
+        <input type="number" min="0" id="totalInput" class="total-input" placeholder="0" oninput="computeNA()">
+      </div>
+      <div class="field">
+        <label for="posInput">إيجابي اليوم</label>
+        <input type="number" min="0" id="posInput" class="pos-input" placeholder="0" oninput="computeNA()">
+      </div>
+      <div class="field">
+        <label for="negInput">سلبي اليوم</label>
+        <input type="number" min="0" id="negInput" class="neg-input" placeholder="0" oninput="computeNA()">
+      </div>
+      <div class="field full">
+        <label>لم يرد اليوم (تلقائي)</label>
+        <div class="na-display" id="naDisplay">0</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="saveRecord()">➕ إضافة أرقام اليوم</button>
+      <button class="btn-ghost" onclick="clearForm()">تفريغ الحقول</button>
+    </div>
+    <div class="msg" id="formMsg"></div>
+  </div>
+
+  <div class="card">
+    <div class="result-header">
+      <h2 id="resultTitle">نتيجة إجمالي القسم</h2>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="msg" id="downloadMsg" style="margin:0;"></span>
+        <button class="btn-primary btn-download" id="downloadBtn" onclick="downloadImage()" style="display:none;">⬇ تحميل النتيجة كصورة</button>
+      </div>
+    </div>
+    <div id="resultArea">
+      <div class="empty">لسه مفيش بيانات مسجّلة — ضيفي موظف وسجّلي أول فترة ليظهر التحليل هنا.</div>
+    </div>
+  </div>
+
+  <div class="card" id="empGridCard" style="display:none;">
+    <h2>تفصيل كل موظف — نفس الفترة</h2>
+    <div class="emp-grid" id="empGridArea"></div>
+  </div>
+
+  <div class="card" id="historyCard" style="display:none;">
+    <h2>السجل التفصيلي</h2>
+    <div style="overflow-x:auto;">
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>الفترة</th>
+            <th>الموظف</th>
+            <th>إجمالي</th>
+            <th>إيجابي</th>
+            <th>سلبي</th>
+            <th>لم يرد</th>
+            <th>المعدل</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <h2 style="margin-top:24px;">تطور معدل القسم عبر الفترات</h2>
+    <div class="trend-chart-wrap">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    البيانات محفوظة في متصفحك على هذا الجهاز فقط
+    <div style="margin-top:6px; color:var(--text-dim);">Powered by: Dr Marwa Mansour</div>
+  </footer>
+</div>
+
+<script>
+const EMP_KEY = 'cr_employees';
+const REC_KEY = 'cr_records_v2';
+const CURRENT_PERIOD_KEY = 'cr_current_period';
+
+let employees = [];   // {id, name}
+let records = [];     // {key, label, employeeId, employeeName, total, pos, neg, na}
+let editingEmployeeId = null;
+let currentPeriodKey = null;
+
+let donutChart = null;
+let trendChart = null;
+let employeeCharts = [];
+
+const arabicMonths = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+function genId(){
+  return 'emp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+function periodLabelFromInput(value){
+  const [y, m] = value.split('-').map(Number);
+  let prevM = m - 1, prevY = y;
+  if(prevM === 0){ prevM = 12; prevY = y - 1; }
+  return `21 ${arabicMonths[prevM-1]} – 20 ${arabicMonths[m-1]} ${y}`;
+}
+function computePeriodKeyForDate(date){
+  const day = date.getDate();
+  let month = date.getMonth() + 1;
+  let year = date.getFullYear();
+  if(day > 20){
+    month += 1;
+    if(month > 12){ month = 1; year += 1; }
+  }
+  return `${year}-${String(month).padStart(2,'0')}`;
+}
+function nextPeriodKey(key){
+  let [y, m] = key.split('-').map(Number);
+  m += 1;
+  if(m > 12){ m = 1; y += 1; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function initCurrentPeriod(){
+  const stored = localStorage.getItem(CURRENT_PERIOD_KEY);
+  currentPeriodKey = stored || computePeriodKeyForDate(new Date());
+  localStorage.setItem(CURRENT_PERIOD_KEY, currentPeriodKey);
+}
+function renderCurrentPeriodBar(){
+  document.getElementById('currentPeriodLabel').textContent = periodLabelFromInput(currentPeriodKey);
+}
+function closeMonth(){
+  const label = periodLabelFromInput(currentPeriodKey);
+  const ok = window.confirm(`متأكدة إن الشهر خلص؟\n\nهيتم قفل فترة (${label}) وحفظها في السجل والمقارنة، والبدء في فترة جديدة من الصفر.`);
+  if(!ok) return;
+  const oldLabel = label;
+  currentPeriodKey = nextPeriodKey(currentPeriodKey);
+  localStorage.setItem(CURRENT_PERIOD_KEY, currentPeriodKey);
+  renderAll();
+  const pMsg = document.getElementById('periodMsg');
+  pMsg.textContent = `تم قفل فترة (${oldLabel}) — الفترة الجديدة: ${periodLabelFromInput(currentPeriodKey)}`;
+  pMsg.className = 'msg ok';
+}
+
+/* ---------- Storage ---------- */
+function loadAll(){
+  try{ employees = JSON.parse(localStorage.getItem(EMP_KEY) || '[]'); }catch(e){ employees = []; }
+  try{ records = JSON.parse(localStorage.getItem(REC_KEY) || '[]'); }catch(e){ records = []; }
+  renderAll();
+}
+function persistEmployees(){ localStorage.setItem(EMP_KEY, JSON.stringify(employees)); }
+function persistRecords(){ localStorage.setItem(REC_KEY, JSON.stringify(records)); }
+
+/* ---------- Employees ---------- */
+function addEmployee(){
+  const input = document.getElementById('empNameInput');
+  const name = input.value.trim();
+  if(!name) return;
+  const exists = employees.some(e => e.name.trim().toLowerCase() === name.toLowerCase());
+  if(exists){
+    input.value = '';
+    input.placeholder = 'الاسم ده موجود بالفعل!';
+    return;
+  }
+  employees.push({ id: genId(), name });
+  persistEmployees();
+  input.value = '';
+  renderEmployeeList();
+  populateEmployeeSelect();
+}
+
+function startEditEmployee(id){
+  editingEmployeeId = id;
+  renderEmployeeList();
+}
+function cancelEditEmployee(){
+  editingEmployeeId = null;
+  renderEmployeeList();
+}
+function confirmEditEmployee(id){
+  const input = document.getElementById('editEmpInput_' + id);
+  const newName = input.value.trim();
+  if(!newName) return;
+  const emp = employees.find(e => e.id === id);
+  if(emp) emp.name = newName;
+  persistEmployees();
+  editingEmployeeId = null;
+  renderEmployeeList();
+  populateEmployeeSelect();
+  renderAll();
+}
+function deleteEmployee(id){
+  const emp = employees.find(e => e.id === id);
+  if(!emp) return;
+  const ok = window.confirm(`تحذف الموظف "${emp.name}"؟ السجلات القديمة هتفضل محفوظة باسمه.`);
+  if(!ok) return;
+  employees = employees.filter(e => e.id !== id);
+  persistEmployees();
+  renderEmployeeList();
+  populateEmployeeSelect();
+  renderAll();
+}
+
+function renderEmployeeList(){
+  const area = document.getElementById('employeeListArea');
+  if(employees.length === 0){
+    area.innerHTML = '<div class="emp-empty">لسه مفيش موظفين — ضيفي أول موظف فوق.</div>';
+    return;
+  }
+  area.innerHTML = employees.map(emp => {
+    if(editingEmployeeId === emp.id){
+      return `
+        <div class="emp-row">
+          <input type="text" id="editEmpInput_${emp.id}" value="${emp.name.replace(/"/g,'&quot;')}">
+          <button class="icon-btn ok" onclick="confirmEditEmployee('${emp.id}')" title="حفظ">✔</button>
+          <button class="icon-btn" onclick="cancelEditEmployee()" title="إلغاء">✕</button>
+        </div>`;
+    }
+    return `
+      <div class="emp-row">
+        <span class="emp-name">${emp.name}</span>
+        <button class="icon-btn" onclick="startEditEmployee('${emp.id}')" title="تعديل">✏️</button>
+        <button class="icon-btn danger" onclick="deleteEmployee('${emp.id}')" title="حذف">✕</button>
+      </div>`;
+  }).join('');
+}
+
+function populateEmployeeSelect(){
+  const sel = document.getElementById('employeeSelect');
+  const currentVal = sel.value;
+  if(employees.length === 0){
+    sel.innerHTML = '<option value="">لا يوجد موظفين — ضيفي واحد أولاً</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = '<option value="" disabled selected>اختاري الموظف</option>' +
+    employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+  if(employees.some(e => e.id === currentVal)) sel.value = currentVal;
+}
+
+function employeeNameById(id, fallback){
+  const emp = employees.find(e => e.id === id);
+  return emp ? emp.name : (fallback || 'موظف محذوف');
+}
+function employeeExists(id){ return employees.some(e => e.id === id); }
+
+/* ---------- Form ---------- */
+function computeNA(){
+  const total = parseInt(document.getElementById('totalInput').value) || 0;
+  const pos = parseInt(document.getElementById('posInput').value) || 0;
+  const neg = parseInt(document.getElementById('negInput').value) || 0;
+  const na = total - pos - neg;
+  const disp = document.getElementById('naDisplay');
+  disp.textContent = na;
+  disp.className = na < 0 ? 'na-display err' : 'na-display';
+}
+
+function clearForm(){
+  document.getElementById('totalInput').value = '';
+  document.getElementById('posInput').value = '';
+  document.getElementById('negInput').value = '';
+  computeNA();
+  document.getElementById('formMsg').textContent = '';
+  document.getElementById('formMsg').className = 'msg';
+}
+
+function saveRecord(){
+  const msgEl = document.getElementById('formMsg');
+  const employeeId = document.getElementById('employeeSelect').value;
+  const total = parseInt(document.getElementById('totalInput').value);
+  const pos = parseInt(document.getElementById('posInput').value);
+  const neg = parseInt(document.getElementById('negInput').value);
+
+  if(!employeeId){ msgEl.textContent = 'من فضلك اختاري الموظف'; msgEl.className = 'msg error'; return; }
+  if([total, pos, neg].some(v => isNaN(v) || v < 0)){
+    msgEl.textContent = 'من فضلك دخّلي الأرقام بشكل صحيح (يمكن صفر)'; msgEl.className = 'msg error'; return;
+  }
+  if(pos + neg > total){
+    msgEl.textContent = 'إيجابي + سلبي أكبر من إجمالي اليوم! راجعي الأرقام'; msgEl.className = 'msg error'; return;
+  }
+
+  const key = currentPeriodKey;
+  const label = periodLabelFromInput(key);
+  const employeeName = employeeNameById(employeeId);
+  const idx = records.findIndex(r => r.key === key && r.employeeId === employeeId);
+
+  if(idx >= 0){
+    const rec = records[idx];
+    rec.total += total;
+    rec.pos += pos;
+    rec.neg += neg;
+    rec.na = rec.total - rec.pos - rec.neg;
+    rec.employeeName = employeeName;
+    msgEl.textContent = `تم الإضافة — إجمالي شهر ${employeeName} الحالي: ${rec.total} مكالمة (${rec.pos} إيجابي)`;
+  }else{
+    records.push({ key, label, employeeId, employeeName, total, pos, neg, na: total - pos - neg });
+    msgEl.textContent = `تم تسجيل أول بيانات لـ ${employeeName} في هذا الشهر`;
+  }
+  msgEl.className = 'msg ok';
+  persistRecords();
+  renderAll();
+
+  document.getElementById('totalInput').value = '';
+  document.getElementById('posInput').value = '';
+  document.getElementById('negInput').value = '';
+  computeNA();
+}
+
+function correctRecord(key, employeeId){
+  const rec = records.find(r => r.key === key && r.employeeId === employeeId);
+  if(!rec) return;
+  const newTotalRaw = window.prompt(`إجمالي المكالمات الصحيح لـ ${rec.employeeName} (${rec.label}):`, rec.total);
+  if(newTotalRaw === null) return;
+  const newTotal = parseInt(newTotalRaw);
+  if(isNaN(newTotal) || newTotal < 0){ alert('رقم غير صحيح'); return; }
+
+  const newPosRaw = window.prompt('عدد الإيجابي الصحيح:', rec.pos);
+  if(newPosRaw === null) return;
+  const newPos = parseInt(newPosRaw);
+  if(isNaN(newPos) || newPos < 0){ alert('رقم غير صحيح'); return; }
+
+  const newNegRaw = window.prompt('عدد السلبي الصحيح:', rec.neg);
+  if(newNegRaw === null) return;
+  const newNeg = parseInt(newNegRaw);
+  if(isNaN(newNeg) || newNeg < 0){ alert('رقم غير صحيح'); return; }
+
+  if(newPos + newNeg > newTotal){ alert('إيجابي + سلبي أكبر من الإجمالي!'); return; }
+
+  rec.total = newTotal;
+  rec.pos = newPos;
+  rec.neg = newNeg;
+  rec.na = newTotal - newPos - newNeg;
+  persistRecords();
+  renderAll();
+}
+
+function deleteRecordRow(key, employeeId){
+  records = records.filter(r => !(r.key === key && r.employeeId === employeeId));
+  persistRecords();
+  renderAll();
+}
+
+/* ---------- Aggregation ---------- */
+function getPeriodsSorted(){
+  return [...new Set(records.map(r => r.key))].sort((a,b) => a.localeCompare(b));
+}
+function recordsForPeriod(key){ return records.filter(r => r.key === key); }
+function aggregateForPeriod(key){
+  const recs = recordsForPeriod(key);
+  const agg = { pos:0, neg:0, na:0, total:0, employeeRecords: recs };
+  recs.forEach(r => { agg.pos += r.pos; agg.neg += r.neg; agg.na += r.na; agg.total += r.total; });
+  return agg;
+}
+function conversionRate(agg){
+  const responded = agg.pos + agg.neg;
+  if(responded === 0) return null;
+  return (agg.pos / responded) * 100;
+}
+function rateBadgeClass(rate){
+  if(rate === null) return 'rate-low';
+  if(rate >= 70) return 'rate-high';
+  if(rate >= 40) return 'rate-mid';
+  return 'rate-low';
+}
+function deltaHtml(currentRate, prevRate){
+  if(currentRate === null || prevRate === null) return '';
+  const diff = currentRate - prevRate;
+  if(Math.abs(diff) < 0.05) return `<div class="delta delta-flat">◆ بدون تغيير عن الفترة السابقة</div>`;
+  const arrow = diff > 0 ? '▲' : '▼';
+  const cls = diff > 0 ? 'delta-up' : 'delta-down';
+  return `<div class="delta ${cls}">${arrow} ${Math.abs(diff).toFixed(1)}% عن الفترة السابقة</div>`;
+}
+
+/* ---------- Render ---------- */
+function renderAll(){
+  renderCurrentPeriodBar();
+  renderEmployeeList();
+  populateEmployeeSelect();
+  renderResult();
+  renderEmployeeGrid();
+  renderHistory();
+}
+
+function renderResult(){
+  const area = document.getElementById('resultArea');
+  const title = document.getElementById('resultTitle');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const periods = getPeriodsSorted();
+
+  if(periods.length === 0){
+    title.textContent = 'نتيجة إجمالي القسم';
+    area.innerHTML = '<div class="empty">لسه مفيش بيانات مسجّلة — ضيفي موظف وسجّلي أول فترة ليظهر التحليل هنا.</div>';
+    downloadBtn.style.display = 'none';
+    document.getElementById('empGridCard').style.display = 'none';
+    return;
+  }
+  downloadBtn.style.display = 'inline-block';
+
+  const latest = periods[periods.length - 1];
+  const prev = periods.length > 1 ? periods[periods.length - 2] : null;
+  const agg = aggregateForPeriod(latest);
+  const prevAgg = prev ? aggregateForPeriod(prev) : null;
+  const rate = conversionRate(agg);
+  const rateDisplay = rate === null ? '—' : rate.toFixed(1) + '%';
+  const deltaBlock = prevAgg ? deltaHtml(rate, conversionRate(prevAgg)) : '';
+  const latestLabel = agg.employeeRecords[0] ? agg.employeeRecords[0].label : latest;
+
+  title.textContent = `نتيجة إجمالي القسم — فترة: ${latestLabel}`;
+
+  area.innerHTML = `
+    <div class="hero">
+      <div class="donut-wrap">
+        <canvas id="donutChart" width="220" height="220"></canvas>
+        <div class="donut-center">
+          <div class="pct">${rateDisplay}</div>
+          <div class="lbl">معدل تحويل القسم من إجمالي من تم الرد عليهم</div>
+          ${deltaBlock}
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-row"><span class="name"><span class="dot dot-pos"></span>إيجابي</span><span class="val" style="color:var(--amber)">${agg.pos}</span></div>
+        <div class="stat-row"><span class="name"><span class="dot dot-neg"></span>سلبي</span><span class="val" style="color:var(--rose)">${agg.neg}</span></div>
+        <div class="stat-row"><span class="name"><span class="dot dot-na"></span>لم يرد</span><span class="val" style="color:var(--slate)">${agg.na}</span></div>
+        <div class="stat-row" style="border:1px solid var(--line);"><span class="name">إجمالي مكالمات القسم</span><span class="val">${agg.total}</span></div>
+      </div>
+    </div>
+  `;
+
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  if(donutChart) donutChart.destroy();
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data:{
+      labels:['إيجابي','سلبي','لم يرد'],
+      datasets:[{ data:[agg.pos, agg.neg, agg.na], backgroundColor:['#e8b75c','#d9707a','#6b7a8d'], borderColor:'#101c2c', borderWidth:3, hoverOffset:6 }]
+    },
+    options:{
+      cutout:'72%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{ rtl:true, callbacks:{ label: (c) => `${c.label}: ${c.raw} (${((c.raw/agg.total)*100 || 0).toFixed(1)}%)` } }
+      }
+    }
+  });
+}
+
+function renderEmployeeGrid(){
+  const card = document.getElementById('empGridCard');
+  const area = document.getElementById('empGridArea');
+  employeeCharts.forEach(c => c.destroy());
+  employeeCharts = [];
+
+  const periods = getPeriodsSorted();
+  if(periods.length === 0){ card.style.display = 'none'; return; }
+  const latest = periods[periods.length - 1];
+  const recs = recordsForPeriod(latest);
+  if(recs.length === 0){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const withRate = recs.map(r => ({ rec:r, rate: conversionRate(r) }));
+  const bestRate = Math.max(...withRate.map(x => x.rate === null ? -1 : x.rate));
+
+  area.innerHTML = withRate.map(({rec, rate}, i) => {
+    const rateDisplay = rate === null ? '—' : rate.toFixed(1) + '%';
+    const isTop = rate !== null && rate === bestRate && withRate.length > 1;
+    const deleted = !employeeExists(rec.employeeId);
+    return `
+      <div class="emp-card ${isTop ? 'top-performer' : ''}">
+        ${isTop ? '<div class="crown">🏆</div>' : ''}
+        <div class="mini-donut-wrap">
+          <canvas id="miniChart_${i}" width="96" height="96"></canvas>
+          <div class="mini-center">${rateDisplay}</div>
+        </div>
+        <div class="emp-card-name">${rec.employeeName}${deleted ? '<span class="deleted-tag">(محذوف)</span>' : ''}</div>
+        <div class="emp-card-counts">
+          <span style="color:var(--amber); font-weight:700;">${rec.pos}</span>
+          <span style="color:var(--text-dim);"> · </span>
+          <span style="color:var(--rose); font-weight:700;">${rec.neg}</span>
+          <span style="color:var(--text-dim);"> · </span>
+          <span style="color:var(--slate); font-weight:700;">${rec.na}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  withRate.forEach(({rec}, i) => {
+    const ctx = document.getElementById('miniChart_' + i).getContext('2d');
+    const c = new Chart(ctx, {
+      type:'doughnut',
+      data:{ datasets:[{ data:[rec.pos, rec.neg, rec.na], backgroundColor:['#e8b75c','#d9707a','#6b7a8d'], borderColor:'#152238', borderWidth:2 }] },
+      options:{ cutout:'70%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
+    });
+    employeeCharts.push(c);
+  });
+}
+
+function renderHistory(){
+  const card = document.getElementById('historyCard');
+  const body = document.getElementById('historyBody');
+  if(records.length === 0){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const sorted = [...records].sort((a,b) => {
+    if(a.key !== b.key) return b.key.localeCompare(a.key);
+    return a.employeeName.localeCompare(b.employeeName, 'ar');
+  });
+
+  body.innerHTML = sorted.map(r => {
+    const rate = conversionRate(r);
+    const rateDisplay = rate === null ? '—' : rate.toFixed(1) + '%';
+    const deleted = !employeeExists(r.employeeId);
+    return `
+      <tr>
+        <td class="period-cell">${r.label}</td>
+        <td class="emp-name-cell">${r.employeeName}${deleted ? '<span class="deleted-tag">(محذوف)</span>' : ''}</td>
+        <td>${r.total}</td>
+        <td style="color:var(--amber)">${r.pos}</td>
+        <td style="color:var(--rose)">${r.neg}</td>
+        <td style="color:var(--slate)">${r.na}</td>
+        <td><span class="rate-badge ${rateBadgeClass(rate)}">${rateDisplay}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" onclick="correctRecord('${r.key}','${r.employeeId}')" title="تصحيح">✏️</button>
+            <button class="icon-btn danger" onclick="deleteRecordRow('${r.key}','${r.employeeId}')" title="حذف">✕</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  const periods = getPeriodsSorted();
+  const trendData = periods.map(p => {
+    const agg = aggregateForPeriod(p);
+    const rate = conversionRate(agg);
+    return { label: agg.employeeRecords[0] ? agg.employeeRecords[0].label : p, rate: rate === null ? 0 : parseFloat(rate.toFixed(1)) };
+  });
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: trendData.map(d => d.label),
+      datasets:[{
+        label:'معدل تحويل القسم %', data: trendData.map(d => d.rate),
+        borderColor:'#3ddbd9', backgroundColor:'#3ddbd922', fill:true, tension:0.35,
+        pointBackgroundColor:'#3ddbd9', pointRadius:4
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ min:0, max:100, ticks:{ color:'#93a4b8', callback:v=>v+'%' }, grid:{ color:'#22334a' } },
+        x:{ ticks:{ color:'#93a4b8' }, grid:{ display:false } }
+      }
+    }
+  });
+}
+
+/* ---------- Image export (pure Canvas 2D, no external libs) ---------- */
+function roundRectPath(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function fillCenteredColoredLine(ctx, cx, y, segments){
+  const widths = segments.map(s => ctx.measureText(s.text).width);
+  const total = widths.reduce((a,b) => a+b, 0);
+  ctx.save();
+  ctx.textAlign = 'left';
+  let x = cx - total/2;
+  segments.forEach((s, i) => {
+    ctx.fillStyle = s.color;
+    ctx.fillText(s.text, x, y);
+    x += widths[i];
+  });
+  ctx.restore();
+}
+
+function drawDonutSegments(ctx, cx, cy, outerR, innerR, pos, neg, na, colors){
+  const total = pos + neg + na;
+  let start = -Math.PI/2;
+  const segs = [ {v:pos, c:colors.amber}, {v:neg, c:colors.rose}, {v:na, c:colors.slate} ];
+  if(total > 0){
+    segs.forEach(seg => {
+      if(seg.v <= 0) return;
+      const sweep = (seg.v/total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, start, start + sweep, false);
+      ctx.arc(cx, cy, innerR, start + sweep, start, true);
+      ctx.closePath();
+      ctx.fillStyle = seg.c;
+      ctx.fill();
+      start += sweep;
+    });
+  }else{
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR, 0, Math.PI*2);
+    ctx.arc(cx, cy, innerR, 0, Math.PI*2, true);
+    ctx.closePath();
+    ctx.fillStyle = colors.panel2;
+    ctx.fill();
+  }
+}
+
+async function downloadImage(){
+  const periods = getPeriodsSorted();
+  if(periods.length === 0) return;
+  const btn = document.getElementById('downloadBtn');
+  const msgEl = document.getElementById('downloadMsg');
+  const originalText = btn.textContent;
+  btn.textContent = '... جاري التحضير';
+  btn.disabled = true;
+  msgEl.textContent = '';
+  msgEl.className = 'msg';
+
+  try{
+    await Promise.race([
+      document.fonts ? document.fonts.ready : Promise.resolve(),
+      new Promise(res => setTimeout(res, 1200))
+    ]);
+
+    const COLORS = {
+      bg1:'#101c2c', bg2:'#0a1420', teal:'#3ddbd9', amber:'#e8b75c',
+      rose:'#d9707a', slate:'#6b7a8d', gold:'#ffd166', text:'#eaf1f5', dim:'#93a4b8', panel2:'#152238'
+    };
+
+    const latest = periods[periods.length - 1];
+    const prev = periods.length > 1 ? periods[periods.length - 2] : null;
+    const agg = aggregateForPeriod(latest);
+    const prevAgg = prev ? aggregateForPeriod(prev) : null;
+    const rate = conversionRate(agg);
+    const rateDisplay = rate === null ? '—' : rate.toFixed(1) + '%';
+    const prevRate = prevAgg ? conversionRate(prevAgg) : null;
+    const label = agg.employeeRecords[0] ? agg.employeeRecords[0].label : latest;
+
+    const empList = agg.employeeRecords.map(r => ({ rec:r, rate: conversionRate(r) }));
+    const bestRate = empList.length > 1 ? Math.max(...empList.map(x => x.rate === null ? -1 : x.rate)) : null;
+
+    const SCALE = 2;
+    const W = 700;
+    const padX = 50;
+
+    // ---- Layout calculations ----
+    const topBlockH = 175;
+    const donutH = 300;
+    const gapAfterDonut = 30;
+    const statsH = 84;
+    const gapAfterStats = 34;
+    const sectionTitleH = empList.length ? 44 : 0;
+    const cols = empList.length <= 2 ? Math.max(empList.length, 1) : 3;
+    const cardW = (W - padX*2 - (cols-1)*16) / cols;
+    const cardH = 170;
+    const rows = Math.ceil(empList.length / cols);
+    const gridH = empList.length ? rows*cardH + (rows-1)*16 : 0;
+    const footerH = 78;
+    const bottomGap = empList.length ? 30 : 0;
+
+    const H = topBlockH + donutH + gapAfterDonut + statsH + gapAfterStats + sectionTitleH + gridH + bottomGap + footerH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W * SCALE;
+    canvas.height = H * SCALE;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(SCALE, SCALE);
+    ctx.textBaseline = 'middle';
+
+    roundRectPath(ctx, 0, 0, W, H, 22);
+    ctx.clip();
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+    bgGrad.addColorStop(0, COLORS.bg1);
+    bgGrad.addColorStop(1, COLORS.bg2);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    const accentGrad = ctx.createLinearGradient(0, 0, W, 0);
+    accentGrad.addColorStop(0, COLORS.amber);
+    accentGrad.addColorStop(0.5, COLORS.teal);
+    accentGrad.addColorStop(1, COLORS.rose);
+    ctx.fillStyle = accentGrad;
+    ctx.fillRect(0, 0, W, 6);
+
+    let y = 46;
+    ctx.textAlign = 'center';
+
+    ctx.font = '700 14px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.teal;
+    ctx.fillText('قسم الاستشارات الدوائية', W/2, y);
+
+    y += 36;
+    ctx.font = '800 28px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.text;
+    ctx.fillText('نتيجة القسم — معدل التحويل الشهري', W/2, y);
+
+    y += 28;
+    ctx.font = '400 15px Tajawal, sans-serif';
+    ctx.fillStyle = COLORS.dim;
+    ctx.fillText(`فترة: ${label}`, W/2, y);
+
+    // Department donut
+    const cx = W/2;
+    const cy = y + 30 + donutH/2 - 20;
+    drawDonutSegments(ctx, cx, cy, 128, 92, agg.pos, agg.neg, agg.na, COLORS);
+
+    ctx.font = '800 50px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.teal;
+    ctx.fillText(rateDisplay, cx, cy - 6);
+    ctx.font = '400 13px Tajawal, sans-serif';
+    ctx.fillStyle = COLORS.dim;
+    ctx.fillText('معدل تحويل القسم', cx, cy + 26);
+
+    if(prevRate !== null && rate !== null){
+      const diff = rate - prevRate;
+      let dText, dColor;
+      if(Math.abs(diff) < 0.05){ dText = '◆ بدون تغيير عن الفترة السابقة'; dColor = COLORS.dim; }
+      else{ dText = `${diff > 0 ? '▲' : '▼'} ${Math.abs(diff).toFixed(1)}% عن الفترة السابقة`; dColor = diff > 0 ? '#5fe3a1' : COLORS.rose; }
+      ctx.font = '700 13px Cairo, sans-serif';
+      ctx.fillStyle = dColor;
+      ctx.fillText(dText, cx, cy + 48);
+    }
+
+    // Stats row
+    let statsY = y + 30 + donutH + gapAfterDonut;
+    const stats = [
+      { n: agg.pos, l: 'إيجابي', c: COLORS.amber },
+      { n: agg.neg, l: 'سلبي', c: COLORS.rose },
+      { n: agg.na, l: 'لم يرد', c: COLORS.slate },
+      { n: agg.total, l: 'إجمالي', c: COLORS.text }
+    ];
+    const boxGap = 12;
+    const boxW = (W - padX*2 - boxGap*3) / 4;
+    stats.forEach((s, i) => {
+      const bx = padX + i*(boxW + boxGap);
+      roundRectPath(ctx, bx, statsY, boxW, statsH, 12);
+      ctx.fillStyle = COLORS.panel2;
+      ctx.fill();
+      ctx.font = '800 21px Cairo, sans-serif';
+      ctx.fillStyle = s.c;
+      ctx.fillText(String(s.n), bx + boxW/2, statsY + 32);
+      ctx.font = '400 12px Tajawal, sans-serif';
+      ctx.fillStyle = COLORS.dim;
+      ctx.fillText(s.l, bx + boxW/2, statsY + 58);
+    });
+
+    // Employee section
+    if(empList.length){
+      const secY = statsY + statsH + gapAfterStats;
+      ctx.font = '700 17px Cairo, sans-serif';
+      ctx.fillStyle = COLORS.text;
+      ctx.fillText('تفصيل كل موظف', W/2, secY);
+
+      const gridStartY = secY + 30;
+      empList.forEach((item, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const bx = padX + col*(cardW + 16);
+        const by = gridStartY + row*(cardH + 16);
+        const isTop = bestRate !== null && item.rate === bestRate;
+
+        roundRectPath(ctx, bx, by, cardW, cardH, 14);
+        ctx.fillStyle = COLORS.panel2;
+        ctx.fill();
+        if(isTop){
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = COLORS.gold;
+          roundRectPath(ctx, bx, by, cardW, cardH, 14);
+          ctx.stroke();
+        }
+
+        const mcx = bx + cardW/2;
+        const mcy = by + 62;
+        drawDonutSegments(ctx, mcx, mcy, 42, 30, item.rec.pos, item.rec.neg, item.rec.na, COLORS);
+
+        const r = item.rate;
+        ctx.font = '800 14px Cairo, sans-serif';
+        ctx.fillStyle = COLORS.teal;
+        ctx.fillText(r === null ? '—' : r.toFixed(1) + '%', mcx, mcy);
+
+        if(isTop){
+          ctx.font = '13px sans-serif';
+          ctx.fillText('🏆', mcx + 32, by + 18);
+        }
+
+        ctx.font = '700 13px Cairo, sans-serif';
+        ctx.fillStyle = COLORS.text;
+        let nameText = item.rec.employeeName;
+        if(ctx.measureText(nameText).width > cardW - 12){
+          while(ctx.measureText(nameText + '…').width > cardW - 12 && nameText.length > 1){
+            nameText = nameText.slice(0, -1);
+          }
+          nameText += '…';
+        }
+        ctx.fillText(nameText, mcx, by + 118);
+
+        ctx.font = '700 11px Tajawal, sans-serif';
+        fillCenteredColoredLine(ctx, mcx, by + 138, [
+          { text: String(item.rec.pos), color: COLORS.amber },
+          { text: ' · ', color: COLORS.dim },
+          { text: String(item.rec.neg), color: COLORS.rose },
+          { text: ' · ', color: COLORS.dim },
+          { text: String(item.rec.na), color: COLORS.slate }
+        ]);
+      });
+    }
+
+    // Footer
+    const footerY = H - footerH;
+    ctx.strokeStyle = '#22334a';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padX, footerY);
+    ctx.lineTo(W - padX, footerY);
+    ctx.stroke();
+
+    ctx.font = '400 13px Tajawal, sans-serif';
+    ctx.fillStyle = COLORS.dim;
+    ctx.fillText('د. مروة منصور — مشرف قسم الاستشارات والتدريب', W/2, footerY + 30);
+
+    ctx.font = '700 13px Cairo, sans-serif';
+    ctx.fillStyle = COLORS.teal;
+    ctx.fillText('Powered by: Dr Marwa Mansour', W/2, footerY + 54);
+
+    const link = document.createElement('a');
+    link.download = `تقرير-القسم-${latest}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    msgEl.textContent = 'تم تحميل الصورة';
+    msgEl.className = 'msg ok';
+  }catch(e){
+    console.error('export error', e);
+    msgEl.textContent = 'حصلت مشكلة، جربي تاني';
+    msgEl.className = 'msg error';
+  }finally{
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+/* ---------- Init ---------- */
+initCurrentPeriod();
+loadAll();
+computeNA();
+</script>
+</body>
+</html>
